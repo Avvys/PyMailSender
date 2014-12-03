@@ -12,6 +12,16 @@ def getData(file) :
 	json_data.close()
 	return data 
 
+def getMessage(mess, data) : # todo nicer message format
+	msg = "\r\n".join([
+	data['login'],
+	data['tomail'],
+	"Subject: ALARM DETECTED",
+	"",
+	mess
+	])
+	return msg
+
 def send(message, attachment) :	
 	config = getData('config.json')
 	try:
@@ -27,7 +37,8 @@ def send(message, attachment) :
 
 
 		#Send the mail
-		msg = "\n Hello!" # The /n separates the message from the headers
+		#msg = "\n Hello!" # The /n separates the message from the headers
+		msg = getMessage(message, config)
 
 		server.sendmail(config['login'], config['tomail'], msg)
 
@@ -38,4 +49,4 @@ def send(message, attachment) :
 	return
 
 message = sys.argv[1]
-send("a","b")
+send(message, "b")
