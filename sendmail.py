@@ -5,6 +5,7 @@ import smtplib
 import json
 import sys
 import os 
+import logging
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
@@ -14,17 +15,24 @@ from email import Encoders
 
 # usage: ./sendmail.py subject "message to send" aat1.x atts2.y
 
+
+logging.basicConfig(filename='pymailsender.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m-%d-%Y %R')
+
 def getAttachmentsFromCmd(args) : 
 	attachments = []
 	for i in range(3, len(args)) :
 		attachments.append(args[i]) 
 		if not os.path.isfile(args[i]) : 
+			logging.warning(args[i] + " doesn't exist! Aborting!")
 			sys.exit(args[i] + " doesn't exist! Aborting!")
-
 	return attachments
 
  
 def getData(file) : 
+	if not os.path.isfile(file) :
+		logging.warning("Can't load config: " + file)
+		sys.exit("Can't load config: " + file)
+
 	json_data = open(file)
 	data = json.load(json_data)
 	json_data.close()
@@ -72,9 +80,14 @@ def send(subject, message, attachments) :
 
 		server.close()
 		print 'successfully sent the mail'
+		logging.info('successfully sent the mail')
 	except:
 		print "failed to send mail"
+		logging.warning('failed to send mail')
 	return
+
+
+
 
 assert (len(sys.argv) >= 3),"Needed 3 or more params!"
 
