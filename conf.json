@@ -1,7 +1,20 @@
+
 {
   "login": "a@a",
   "pass" : "secretpassword",
   "to" : [
+    "a@a",
+    "b@a",
+    "c@c"
+  ],
+  
+  "cc" : [
+    "a@a",
+    "b@a",
+    "c@c"
+  ],
+  
+  "bcc" : [
     "a@a",
     "b@a",
     "c@c"

@@ -12,12 +12,15 @@ from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
 
-# usage: ./sendmail.py "message to send" aat1.x atts2.y
+# usage: ./sendmail.py subject "message to send" aat1.x atts2.y
 
 def getAttachmentsFromCmd(args) : 
 	attachments = []
-	for i in range(2, len(args)) :
-		attachments.append(args[i])
+	for i in range(3, len(args)) :
+		attachments.append(args[i]) 
+		if not os.path.isfile(args[i]) : 
+			sys.exit(args[i] + " doesn't exist! Aborting!")
+
 	return attachments
 
  
@@ -27,11 +30,13 @@ def getData(file) :
 	json_data.close()
 	return data 
 
-def prepareMessage(mess, attachments, data) : # todo nicer message format
+def prepareMessage(subject, mess, attachments, data) : # todo nicer message format
 	msg = MIMEMultipart()
-	msg['Subject'] = "ALARM DETECTED"
+	msg['Subject'] = subject
 	msg['From'] = data['login']
-	msg['To'] = "you"
+	msg['To'] = ', '.join(data['to'])
+	msg['Cc'] = ', '.join(data['cc'])
+	msg['Bcc'] = ', '.join(data['bcc'])
 	msg.attach(MIMEText(mess))
 
 	for a in attachments :
@@ -43,11 +48,11 @@ def prepareMessage(mess, attachments, data) : # todo nicer message format
 
 	return msg
 
-def send(message, attachments) :	
-	config = getData('conf.json')
+def send(subject, message, attachments) :	
+	config = getData('config.json')
 	try:
 		server = smtplib.SMTP(config['smtpsrv'], config['port'])
-		server.set_debuglevel(True) 
+		#server.set_debuglevel(True) 
 
 		# need to say EHLO before just running straight into STARTTLS
 		server.ehlo()  
@@ -57,11 +62,11 @@ def send(message, attachments) :
 		server.login(config['login'], config['pass'])
 		
 		# message
-		msg = prepareMessage(message, attachments, config)
+		msg = prepareMessage(subject, message, attachments, config)
 
 		# list of recipients
-		toList = config['to']
-
+		toList = config['to'] + config['cc'] + config['bcc']
+		print toList
 		# Send the mail
 		server.sendmail(config['login'], toList, msg.as_string())
 
@@ -73,7 +78,9 @@ def send(message, attachments) :
 
 assert (len(sys.argv) >= 3),"Needed 3 or more params!"
 
-message = sys.argv[1]
+subject = sys.argv[1]
+message = sys.argv[2]
+
 attachments = getAttachmentsFromCmd(sys.argv)
 
-send(message, attachments)
+send(subject, message, attachments)
