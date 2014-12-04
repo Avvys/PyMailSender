@@ -1,8 +1,12 @@
 #!/usr/bin/python
+#-*- coding: utf-8 -*-
 
 import smtplib
 import json
 import sys
+
+from email.mime.text import MIMEText
+
 
 # usage: ./sendmail.py "message to send" aat1.x atts2.y
  
@@ -13,13 +17,13 @@ def getData(file) :
 	return data 
 
 def getMessage(mess, data) : # todo nicer message format
-	msg = "\r\n".join([
-	data['login'],
-	data['tomail'],
-	"Subject: ALARM DETECTED",
-	"",
-	mess
-	])
+	msg = MIMEText(mess)
+
+	msg['Subject'] = "ALARM DETECTED"
+	msg['From'] = data['login']
+	msg['To'] = data['tomail']
+	msg['Body'] = mess
+
 	return msg
 
 def send(message, attachment) :	
@@ -32,15 +36,14 @@ def send(message, attachment) :
 		server.ehlo()  # need to say EHLO before just running straight into STARTTLS
 		server.starttls()
 
-		#Next, log in to the server
+		# log in to the server
 		server.login(config['login'], config['pass'])
-
-
-		#Send the mail
-		#msg = "\n Hello!" # The /n separates the message from the headers
+		
+		# message
 		msg = getMessage(message, config)
 
-		server.sendmail(config['login'], config['tomail'], msg)
+		# Send the mail
+		server.sendmail(config['login'], config['tomail'], msg.as_string())
 
 		server.close()
 		print 'successfully sent the mail'
