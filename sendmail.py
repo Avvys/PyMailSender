@@ -5,7 +5,6 @@ import smtplib
 import json
 import sys
 import os 
-
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
@@ -30,12 +29,10 @@ def getData(file) :
 
 def prepareMessage(mess, attachments, data) : # todo nicer message format
 	msg = MIMEMultipart()
-	
 	msg['Subject'] = "ALARM DETECTED"
 	msg['From'] = data['login']
-	msg['To'] = data['tomail']
+	msg['To'] = "you"
 	msg.attach(MIMEText(mess))
-
 
 	for a in attachments :
 		part = MIMEBase('application', "octet-stream")
@@ -47,7 +44,7 @@ def prepareMessage(mess, attachments, data) : # todo nicer message format
 	return msg
 
 def send(message, attachments) :	
-	config = getData('config.json')
+	config = getData('conf.json')
 	try:
 		server = smtplib.SMTP(config['smtpsrv'], config['port'])
 		server.set_debuglevel(True) 
@@ -62,8 +59,11 @@ def send(message, attachments) :
 		# message
 		msg = prepareMessage(message, attachments, config)
 
+		# list of recipients
+		toList = config['to']
+
 		# Send the mail
-		server.sendmail(config['login'], config['tomail'], msg.as_string())
+		server.sendmail(config['login'], toList, msg.as_string())
 
 		server.close()
 		print 'successfully sent the mail'

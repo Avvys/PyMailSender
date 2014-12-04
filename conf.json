@@ -1,7 +1,11 @@
 {
   "login": "a@a",
   "pass" : "secretpassword",
-  "tomail" : "b@a",
+  "to" : [
+    "a@a",
+    "b@a",
+    "c@c"
+  ],
   "smtpsrv" : "mail.a",
   "port" : 123
 }
