@@ -8,6 +8,5 @@ First edit conf.json for configure STMP server, account and mail receiver
 
 Next, run script:
 ``` 
-./sendmail "message to send" attachments*
+./sendmail subject "message to send" attachments*
 ```
-
