@@ -12,11 +12,10 @@ from email.MIMEText import MIMEText
 from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
-
 # usage: ./sendmail.py subject "message to send" aat1.x atts2.y
 
 
-logging.basicConfig(filename='pymailsender.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m-%d-%Y %R')
+logging.basicConfig(filename='pymailsender.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %R')
 
 def getAttachmentsFromCmd(args) : 
 	attachments = []
@@ -26,7 +25,6 @@ def getAttachmentsFromCmd(args) :
 			logging.warning(args[i] + " doesn't exist! Aborting!")
 			sys.exit(args[i] + " doesn't exist! Aborting!")
 	return attachments
-
  
 def getData(file) : 
 	if not os.path.isfile(file) :
@@ -60,10 +58,11 @@ def send(subject, message, attachments) :
 	config = getData('config.json')
 	try:
 		server = smtplib.SMTP(config['smtpsrv'], config['port'])
-		#server.set_debuglevel(True) 
+		# server.set_debuglevel(True) 
 
-		# need to say EHLO before just running straight into STARTTLS
-		server.ehlo()  
+		# encrypt session if it's possible
+		#if server.has_extn('STARTTLS') :
+		server.ehlo()  # need to say EHLO before just running straight into STARTTLS
 		server.starttls()
 
 		# log in to the server
@@ -74,9 +73,17 @@ def send(subject, message, attachments) :
 
 		# list of recipients
 		toList = config['to'] + config['cc'] + config['bcc']
-		print toList
+		print toList 
+
+		# logging info about recipients - are they exist in srv? 
+		for user in toList :
+			verifyUser = server.verify(user)
+			print verifyUser
+			logging.info(str(verifyUser))
+			
+		
 		# Send the mail
-		server.sendmail(config['login'], toList, msg.as_string())
+		#server.sendmail(config['login'], toList, msg.as_string())
 
 		server.close()
 		print 'successfully sent the mail'
